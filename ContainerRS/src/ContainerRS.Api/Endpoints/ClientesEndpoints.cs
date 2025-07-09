@@ -12,6 +12,27 @@ namespace ContainerRS.Api.Endpoints
     public static class ClientesEndpoints
     {
         public const string ENDPOINT_NAME_GET_CLIENTE = "GetCliente";
+
+        public static IEndpointRouteBuilder MapClientesEndpoints(this IEndpointRouteBuilder builder)
+        {
+            var group = builder
+                .MapGroup(EndpointConstants.ROUTE_CLIENTES)
+                .RequireAuthorization(policy => policy.RequireRole("Cliente"))
+                .WithTags(EndpointConstants.TAG_CLIENTES)
+                .WithOpenApi();
+
+            group
+                .MapGetClienteById()
+                .MapPostClientes()
+                .MapPutCliente()
+                .MapDeleteCliente()
+                .MapGetRegistrationStatus()
+                .MapPostEndereco()
+                .MapPutEndereco()
+                .MapDeleteEndereco();
+
+            return builder;
+        }
         public static RouteGroupBuilder MapGetClienteById(this RouteGroupBuilder builder)
         {
             builder.MapGet("{id}", async (
