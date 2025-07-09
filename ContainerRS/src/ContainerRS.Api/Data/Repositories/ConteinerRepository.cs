@@ -1,0 +1,11 @@
+﻿using ContainerRS.Api.Domain;
+
+namespace ContainerRS.Api.Data.Repositories
+{
+    public class ConteinerRepository : BaseRepository<Conteiner>
+    {
+        public ConteinerRepository(AppDbContext dbContext) : base(dbContext)
+        {
+        }
+    }
+}

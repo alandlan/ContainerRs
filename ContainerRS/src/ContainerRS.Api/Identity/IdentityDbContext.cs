@@ -17,13 +17,13 @@ namespace ContainerRS.Api.Identity
                 return;
 
             // Configure the DbContext to use a default connection string if not already configured
-            optionsBuilder.UseSqlServer("Server=localhost,1433;Database=SeuBanco;User Id=sa;Password=Your_password123;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=localhost,1433;Database=ContainRs;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;");
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
+            builder.HasDefaultSchema("Identity");
         }
     }
 }

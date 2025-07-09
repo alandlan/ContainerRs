@@ -1,9 +1,43 @@
+using ContainerRS.Api.Contracts;
+using ContainerRS.Api.Data;
+using ContainerRS.Api.Data.Repositories;
+using ContainerRS.Api.Domain;
+using ContainerRS.Api.Endpoints;
+using ContainerRS.Api.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<IdentityDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityDB"));
+});
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ContainRsDB"));
+});
+
+builder.Services.AddScoped<IRepository<Cliente>, ClienteRepository>();
+builder.Services.AddScoped<IRepository<Solicitacao>, SolicitacaoRepository>();
+builder.Services.AddScoped<IRepository<Proposta>, PropostaRepository>();
+builder.Services.AddScoped<IRepository<Locacao>, LocacaoRepository>();
+builder.Services.AddScoped<IRepository<Conteiner>, ConteinerRepository>();
+
+builder.Services
+    .AddIdentityApiEndpoints<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<IdentityDbContext>();
+
+builder.Services.AddAuthorization();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.ClaimsIdentity.UserIdClaimType = "ClienteId";
+});
 
 var app = builder.Build();
 
@@ -16,29 +50,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+app
+    .MapIdentityEndpoints()
+    .MapClientesEndpoints()
+    .MapAprovacaoClienteEndpoints()
+    .MapSolicitacoesEndpoints()
+    .MapPropostasEndpoints()
+    .MapLocacoesEndpoints()
+    .MapConteineresEndpoints();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
